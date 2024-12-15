@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -20,6 +20,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("Cnn"));
 });
 
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -33,7 +34,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine("Token validated successfully");
+                return Task.CompletedTask;
+            }
+        };
     });
+
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -73,32 +89,12 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-//builder.Services.AddSwaggerGen(c =>
-//{
-//    c.SwaggerDoc("v1", new OpenApiInfo { Version = "v1", Title = "Test Web Api" });
-//    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-//    {
-//        Description = "JWT Authorization",
-//        Name = "Authorization",
-//        In = ParameterLocation.Header,
-//        Type = SecuritySchemeType.ApiKey,
-//        Scheme = "Bearer"
-//    });
-//    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
-//      {
-//        {
-//          new OpenApiSecurityScheme
-//          {
-//            Reference = new OpenApiReference
-//              {
-//                Type = ReferenceType.SecurityScheme,
-//                Id = "Bearer"
-//              },
-//            },
-//            new string[]{}
-//          }
-//        });
-//});
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("SpecificUserOnly", policy =>
+        policy.RequireClaim("UserName", "YA_IVI_VA")); // Only Users that username = VA_IVI_VA
+});
+
 
 var app = builder.Build();
 

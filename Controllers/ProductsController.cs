@@ -8,7 +8,7 @@ namespace WebAPI_JWT.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize]
+[Authorize(Policy = "SpecificUserOnly")]
 public class ProductsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
@@ -22,6 +22,13 @@ public class ProductsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
     {
+        // بررسی UserName از Claims
+        //var userName = User.Claims.FirstOrDefault(c => c.Type == "UserName")?.Value;
+        //if (userName != "YA_IVI_VA")
+        //{
+        //    return Forbid(); // دسترسی غیرمجاز
+        //}
+
         return await _context.Products.ToListAsync();
     }
 
