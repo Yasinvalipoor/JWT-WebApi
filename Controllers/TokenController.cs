@@ -45,7 +45,7 @@ public class TokenController : ControllerBase
                     _configuration["Jwt:Issuer"],
                     _configuration["Jwt:Audience"],
                     claims,
-                    expires: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds().ToDateTime(), // تاریخ انقضا به صورت 10 دقیقه از اکنون
+                    expires: DateTimeOffset.UtcNow.AddDays(1).DateTime, // تاریخ انقضا به صورت 10 دقیقه از اکنون
                     signingCredentials: credentials);
 
                 return Ok(new JwtSecurityTokenHandler().WriteToken(token));
